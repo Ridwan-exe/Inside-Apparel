@@ -1,0 +1,33 @@
+﻿# Abaikan semua, lalu izinkan hanya yang kita kelola
+/*
+!/.gitignore
+!/README.md
+!/CLAUDE.md
+!/AGENTS.md
+!/docs
+!/wp-content
+
+/wp-content/*
+!/wp-content/plugins
+!/wp-content/themes
+
+/wp-content/plugins/*
+!/wp-content/plugins/inside-apparel-core
+
+/wp-content/themes/*
+!/wp-content/themes/inside-apparel
+
+# Rahasia & dependency
+.env
+.env.*
+!.env.example
+wp-config.php
+node_modules/
+vendor/
+*.log
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
