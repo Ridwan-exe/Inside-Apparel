@@ -20,6 +20,7 @@ Sales channel yang direncanakan:
 
 Sistem harus dirancang agar dapat berkembang tanpa perlu membangun ulang seluruh sistem ketika jumlah produk, customer, order, atau sales channel bertambah.
 
+Untuk Backend proses pesanan, upload produk, edit stok, dll saya ingin custom dan acuannya pada website JUBELIO POS
 ---
 
 # 2. PROJECT OBJECTIVES
@@ -107,9 +108,8 @@ Customer dapat:
 
 Inside Apparel akan memiliki sistem membership berdasarkan lifetime purchase customer.
 
-Contoh business rule:
+Business rule:
 
-```text
 Lifetime Purchase >= Rp1.000.000
         ↓
 Customer mendapatkan benefit membership
@@ -233,11 +233,11 @@ Skalabilitas: penambahan produk, order, dan channel tidak memerlukan pembangunan
 
 Harus diputuskan sebelum fitur terkait dibuat:
 
-Level, nilai, dan benefit membership.
-Apakah order Shopee dihitung ke lifetime purchase?
-Skema komisi affiliate dan cara pembayarannya.
-Payment gateway dan kurir yang dipakai.
-Safety buffer stok dan perilaku saat sinkronisasi gagal.
-Kebijakan pembatalan, retur, dan refund.
-Perlu WhatsApp atau cukup email?
-Jumlah produk/SKU awal dan target order per hari.
+- Level (Gold, Silver, Bronze), nilai (Gold lifetime purchase 5.000.000, Silver lifetime purchase 2.500.000, Bronze lifetime purchase 1.000.000), dan benefit membership (Akana mendapatkan voucher diskon sesuai dengan levelnya).
+- Apakah order Shopee dihitung ke lifetime purchase? Tidak
+- Skema komisi affiliate dan cara pembayarannya. Untuk komisi setiap penjualan melalui refferal link akan mendapatkan 10-15% dari harga produk yang dijual, dan cara pembayarannya saya ingin seperti ada page tersendiri untuk melihat saldo, tarik saldo
+- Payment gateway dan kurir yang dipakai. Untuk payment gateway saya ingin memudahkan customer pada intinya, misal ada pilihan QRIS dan Virtual Account, untuk kurir yang terbayang bisa generate resi langsung dari backend dan sudah otomatis barcode pada jasa kirimnya
+- Safety buffer stok dan perilaku saat sinkronisasi gagal. Saat sinkronisasi gagal, alihkan pada manual stok
+- Kebijakan pembatalan, retur, dan refund. Masih dilakukan dengan cara Whatsapp
+- Perlu WhatsApp atau cukup email? Boleh keduanya
+- Jumlah produk/SKU awal dan target order per hari. Sebanyak mungkin
