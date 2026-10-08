@@ -1,4 +1,4 @@
-# INSIDE APPAREL
+﻿# INSIDE APPAREL
 # MASTER REQUIREMENT
 
 Version: 0.1
@@ -173,7 +173,7 @@ Stok tidak boleh negatif.
 Order website mengurangi stok langsung; pembatalan mengembalikan stok.
 Order Shopee mengurangi stok pusat, lalu stok baru disinkronkan ke channel lain.
 Pencegahan overselling: safety buffer per channel (contoh: stok tampil = stok pusat dikurangi 1).
-Jika sinkronisasi gagal, sistem mencoba ulang dan menandai SKU yang bermasalah untuk ditinjau admin.
+Jika sinkronisasi ke Shopee gagal, stok SKU terkait di-set 0 di Shopee, SKU ditandai bermasalah, dan admin melakukan sinkronisasi manual.
 Penyesuaian stok manual oleh admin wajib menyertakan alasan.
 
 Detail desain ditulis di dokumen terpisah: docs/INVENTORY_DESIGN.md.
