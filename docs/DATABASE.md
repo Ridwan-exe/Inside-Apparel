@@ -89,4 +89,4 @@ Indeks: `UNIQUE (channel, sku)`, `(sync_status)`.
 
 | Versi DB | Tanggal | Perubahan |
 |----------|---------|-----------|
-| 1 (rencana) | - | Membuat `ia_stock_log` dan `ia_channel_sku_map` |
+| 1 | 2026-10-09 | Membuat `ia_stock_log` dan `ia_channel_sku_map` lewat `IA_Inventory_Installer` (plugin v0.2.0). Capability `ia_view_stock`, `ia_manage_stock`, `ia_manage_channels` ditambahkan ke Administrator dan Shop Manager. Tabel `ia_channel_sku_map` sudah dibuat tetapi belum dipakai (Tahap 3). |

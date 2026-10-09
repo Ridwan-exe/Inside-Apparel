@@ -35,21 +35,22 @@ Terakhir diperbarui: 2026-10-09
 - Kerangka tema `inside-apparel`: `style.css`, `functions.php`, `index.php`.
 - WordPress lokal di LocalWP. Plugin Inside Apparel Core sudah aktif.
 - Dokumen: MASTER_REQUIREMENT v0.8, INVENTORY_DESIGN v0.1, DATABASE v0.1, DECISIONS, AGENTS.
+- Inventory Tahap 1 (plugin v0.2.0), kode ditulis 2026-10-09: installer dan tabel, capability, deklarasi HPOS, `IA_Inventory_Service::adjust()` dan `set_quantity()`, log stok, halaman Posisi Stok (cari, filter, Sesuaikan, Export CSV), Log Stok (filter, Export CSV), Impor Stok Awal (CSV dengan pratinjau). 42 uji logika lulus dengan WordPress tiruan.
 
 # 4. BELUM ADA
 
-- Belum ada kode fitur sama sekali (belum ada tabel, service stok, halaman admin).
-- Dokumen design baru untuk inventory. Belum ada untuk order, membership, voucher, affiliate, notifikasi, Shopee.
+- Tahap 1 BELUM diuji di WordPress/WooCommerce sungguhan (hanya diuji dengan tiruan). Uji di LocalWP dulu sebelum lanjut Tahap 2.
+- Tahap 2 (hook WooCommerce, angka Ditahan/Dalam proses/Fisik, pengaturan WooCommerce) belum dibuat. Kolom stok di halaman baru menampilkan Stok WooCommerce saja.
+- Dokumen design untuk order, membership, voucher, affiliate, notifikasi, Shopee belum ada.
 
 ---
 
 # 5. LANGKAH BERIKUTNYA (URUT)
 
-1. Owner membaca MASTER_REQUIREMENT dan INVENTORY_DESIGN, lalu menyetujui atau mengoreksi butir bertanda [USULAN] (D-017 sampai D-020 di DECISIONS).
-2. Tulis kode inventory Tahap 1: installer dan tabel (`ia_stock_log`, `ia_channel_sku_map`), `IA_Inventory_Service::adjust()`, log stok, halaman Posisi Stok, Sesuaikan stok, Impor Stok Awal.
-3. Inventory Tahap 2: hook WooCommerce (order, batal, edit langsung), angka Ditahan/Dalam proses/Fisik, pengaturan WooCommerce (hold stock 30 menit, backorder mati), deklarasi kompatibilitas HPOS.
-4. Tulis dokumen desain berikutnya: order management dan retur, lalu membership dan voucher, lalu affiliate.
-5. Owner mendaftar sebagai developer Shopee Open Platform (persetujuan bisa lama, jalur kritis Fase 2).
+1. Owner menguji Tahap 1 di LocalWP (checklist uji ada di pesan serah terima sesi 2026-10-09) dan melaporkan hasilnya. Butir [USULAN] D-017 sampai D-020 dianggap disetujui kecuali owner menyatakan lain.
+2. Inventory Tahap 2: hook WooCommerce (order, batal, edit langsung), angka Ditahan/Dalam proses/Fisik, pengaturan WooCommerce (hold stock 30 menit, backorder mati). Deklarasi HPOS sudah ada sejak Tahap 1.
+3. Tulis dokumen desain berikutnya: order management dan retur, lalu membership dan voucher, lalu affiliate.
+4. Owner mendaftar sebagai developer Shopee Open Platform (persetujuan bisa lama, jalur kritis Fase 2).
 
 Aturan kerja: satu fitur satu branch, review silang antar AI, merge lewat pull request. Setiap perubahan database dicatat di `docs/DATABASE.md`, setiap keputusan baru di `docs/DECISIONS.md`.
 
