@@ -1,7 +1,7 @@
 ﻿# INSIDE APPAREL
 # MASTER REQUIREMENT
 
-Version: 0.2
+Version: 0.8
 Status: Draft
 Terakhir diperbarui: 2026-10-08
 
@@ -37,7 +37,18 @@ Prinsip:
   - Fase 1: daftar order terpadu, proses order (status, packing, resi/label), upload dan edit produk beserta varian, edit stok, log perubahan stok.
   - Fase 2: integrasi Shopee dan sinkronisasi stok.
   - Fase 3: laporan dan fitur lanjutan.
-- **[TBD]** Daftar halaman/fitur Jubelio yang menjadi acuan (screenshot atau daftar menu) dan apakah kasir/POS offline termasuk cakupan.
+- Kasir/POS offline tidak termasuk cakupan awal. Jika dibutuhkan nanti, dirancang bersama setelah Fase 2. Desain stok dan order harus menyediakan sumber/channel yang bisa ditambah (contoh: `pos`) agar POS offline dapat ditambahkan tanpa membangun ulang.
+- Jubelio dipakai sebagai acuan alur kerja dan fungsi (lihat 1.2), bukan untuk meniru tampilan atau identitas visualnya.
+
+## 1.2 Acuan Jubelio (dari screenshot)
+
+Menu utama Jubelio: Katalog, Persediaan, Penjualan, Pembelian, Gudang, Keuangan. Untuk Fase 1 yang dipakai sebagai acuan: Katalog (produk), Penjualan (pesanan, retur), dan Persediaan (posisi stok). Pembelian, Gudang, dan Keuangan di luar cakupan awal **[USULAN]**.
+
+| Halaman acuan | Isi yang terlihat | Dipakai di Inside Apparel |
+|---------------|-------------------|---------------------------|
+| Katalog > Produk > Buat Produk (Produk Satuan) | Form dengan tab Detail Produk, Informasi Penjualan dan Pembelian, Informasi Pengiriman, Gambar dan Video Produk. Field: nama, merek, kategori bertingkat, toggle variasi ukuran/warna, SKU, barcode, deskripsi (30-10.000 karakter), tipe produk (bundle, konsinyasi, pre-order), atribut (bahan, motif, gender, tahun). | Form produk dengan tab serupa. Dipakai: nama, merek, kategori bertingkat, variasi ukuran/warna, SKU, barcode, deskripsi, pre-order, atribut produk. Bundle dan konsinyasi lihat bagian 8. |
+| Penjualan > Transaksi Penjualan > Pesanan | Tab Pantauan, Pesanan, Faktur, Retur, Faktur Pajak. Filter cepat: Semua, Belum Dibayar, Gagal Download, Siap Proses. Kolom: no. pesanan, tanggal, no. resi, penerima, lokasi, nilai, toko, kurir, status channel, status internal, no. faktur. Filter: pencarian pesanan/produk, lokasi, status, kurir, channel, toko, tipe pesanan, isi pesanan, rentang tanggal. Tombol Export, Import, Tambah Baru. | Daftar order terpadu dengan kolom dan filter serupa. Status channel (status di channel asal, mis. Shopee) dipisah dari status internal. Filter cepat termasuk "Gagal Sinkron" untuk order Shopee yang gagal masuk. Tab Retur untuk pencatatan retur. Tambah Baru untuk order manual (mis. dari WhatsApp). Export/Import CSV. Faktur pajak di luar cakupan awal. |
+| Persediaan > Posisi Stok > Stok Total | Tab Pantauan, Stok Total, Stok Lokasi. Filter: cari produk, tipe. Kolom: produk dan SKU, harga pokok, stok gudang (beberapa angka). | Halaman posisi stok per SKU dengan harga pokok. Satu lokasi "Pusat" dulu, desain tetap memungkinkan lokasi tambahan **[USULAN]**. Arti angka stok (fisik, dipesan, tersedia) ditentukan di `docs/INVENTORY_DESIGN.md`. |
 
 ---
 
@@ -131,7 +142,7 @@ Membership berdasarkan lifetime purchase customer.
 | Member | Rp0 | - |
 | Bronze | >= Rp1.000.000 | Diskon 3% |
 | Silver | >= Rp2.500.000 | Diskon 5% |
-| Gold | >= Rp5.000.000 | Diskon 7% **[TBD: konfirmasi, sebelumnya tertulis "silver" dua kali]** |
+| Gold | >= Rp5.000.000 | Diskon 7% |
 
 Aturan:
 
@@ -143,8 +154,10 @@ Aturan:
 - Setelah voucher dipakai, customer mendapat voucher berikutnya sesuai level saat itu.
 - Saat naik level, voucher yang belum terpakai diganti dengan voucher level baru.
 - Perubahan level otomatis dan tercatat (tanggal, nilai sebelum/sesudah).
-- **[TBD]** Voucher berikutnya diberikan langsung setelah yang lama dipakai, atau ada jeda (contoh: 30 hari)? Tanpa jeda, customer bisa mendapat diskon di setiap order.
-- **[TBD]** Batas maksimum nominal potongan per voucher membership (contoh: maks Rp100.000).
+- Voucher berikutnya diberikan 1 bulan setelah tanggal pemakaian voucher sebelumnya.
+- Jika customer naik level, voucher level baru langsung diberikan tanpa menunggu jeda 1 bulan.
+- Diskon voucher membership dihitung dari subtotal produk. Contoh: customer Gold (lifetime purchase di atas Rp5.000.000) membeli senilai Rp1.000.000 dan memakai voucher 7%, maka membayar Rp1.000.000 - 7% = Rp930.000 (belum termasuk ongkir).
+- Tanpa batas maksimum nominal potongan **[USULAN]**. Perlu diperhatikan: pada order besar potongan ikut besar (order Rp10.000.000 dengan voucher 7% = potongan Rp700.000). Batas maksimum dapat ditambahkan kapan saja.
 
 ---
 
@@ -172,7 +185,10 @@ Aturan penggabungan:
 
 - Voucher gratis ongkir dapat digabung dengan voucher potongan harga (contoh: gratis ongkir + voucher member).
 - Voucher potongan harga tidak dapat digabung dengan voucher potongan harga lain. Maksimal satu voucher potongan harga per order.
-- **[TBD]** Apakah kode affiliate memberi diskon ke pembeli? Kalau ya, apakah dihitung sebagai voucher potongan harga (tidak bisa digabung dengan voucher member)?
+- Kode affiliate dapat digabung dengan voucher member. Kode affiliate tidak dihitung sebagai voucher potongan harga yang saling meniadakan.
+- Kode affiliate memberi diskon ke pembeli sebesar 1-3% tergantung produk yang dibeli. Persentase diatur per produk oleh admin (field diskon affiliate pada produk).
+- Diskon affiliate dan voucher member dapat berlaku bersamaan pada order yang sama. Keduanya dihitung dari harga produk sebelum diskon (dijumlahkan, tidak berlapis) **[USULAN]**. Contoh: produk Rp1.000.000 dengan voucher Gold 7% + diskon affiliate 3% = potongan Rp100.000, customer membayar Rp900.000 (belum termasuk ongkir).
+- Produk yang belum diatur persentase diskon affiliate-nya memakai default 1% (diskon ke pembeli dan komisi BA sama-sama 1%).
 
 Prioritas: gunakan sistem kupon bawaan WooCommerce sebagai fondasi, tambahkan logika custom hanya jika kebutuhan tidak tercakup.
 
@@ -185,15 +201,17 @@ Aturan:
 - Setiap affiliate memiliki kode referral dan link referral unik.
 - Penjualan melalui kode atau link tercatat atas nama affiliate.
 - Komisi dihitung dari order **completed**, bukan saat order dibuat.
-- Komisi 10-15% dari harga produk yang terjual. Dasar perhitungan: subtotal produk setelah diskon, tidak termasuk ongkir **[USULAN]**.
-- Besaran komisi **[USULAN]**: diatur per affiliate oleh admin dalam rentang 10-15%, default 10%.
+- Komisi affiliate (BA) sama dengan nilai diskon affiliate yang diterima pembeli (1-3% per produk, sesuai pengaturan produk). Dasar perhitungan: harga produk sebelum diskon, tidak termasuk ongkir. Contoh: produk Rp900.000 dengan diskon affiliate 3% = Rp27.000, maka pembeli membayar Rp900.000 - Rp27.000 dan komisi affiliate Rp27.000.
+- Komisi tidak bergantung pada voucher member. Pembeli yang juga memakai voucher member tetap menghasilkan komisi sebesar diskon affiliate.
+- Tidak ada persentase komisi per affiliate. Semua affiliate memakai aturan yang sama, besarnya mengikuti pengaturan diskon affiliate pada produk.
+- **Catatan margin:** pada kombinasi tertinggi (voucher Gold 7% + diskon affiliate 3% + komisi 3%), untuk produk Rp1.000.000 customer membayar Rp900.000, komisi Rp30.000, sehingga total biaya promosi Rp130.000 (13% dari harga normal), belum termasuk biaya payment gateway.
 - Komisi order yang dibatalkan atau di-refund dibatalkan.
 - Affiliate tidak boleh memakai kodenya untuk order sendiri.
 
 Status komisi:
 
 1. **Pending**: order belum completed.
-2. **Approved**: order completed dan melewati masa tunggu refund **[USULAN: 7 hari setelah completed]**, masuk ke saldo.
+2. **Approved**: 1 hari setelah order berstatus completed, komisi masuk ke saldo yang dapat ditarik. Retur yang masuk sebelum komisi approved membatalkan komisi, dan retur setelahnya dikoreksi dari saldo (lihat aturan penarikan).
 3. **Paid**: sudah ditarik dan dibayar admin.
 
 Halaman Affiliate (khusus affiliate):
@@ -219,12 +237,17 @@ Penarikan saldo:
 - kategori dan sub-kategori
 - produk variabel: ukuran, warna
 - SKU unik per varian (kunci pemetaan ke Shopee)
+- barcode per SKU
 - harga normal dan harga promo
+- harga pokok per SKU (internal, tidak tampil ke customer), dasar analisis margin nanti **[USULAN]**
+- diskon affiliate per produk (1-3%, default 1%)
+- atribut produk tambahan (bahan, motif, gender, tahun) untuk kebutuhan listing Shopee **[USULAN]**
 - gambar produk
 - berat dan dimensi (untuk ongkir)
 - deskripsi dan size guide
 - pencarian dan filter (kategori, ukuran, warna, harga)
 - status: tersedia, habis, pre-order
+- Produk bundle dan produk konsinyasi (ada di Jubelio) tidak diperlukan, jadi tidak dibangun. Produk cukup berupa produk satuan dengan variasi.
 
 ---
 
@@ -258,13 +281,18 @@ Status order **[USULAN]**: pending payment, processing, packed, shipped, complet
 - Admin dapat mengubah status, menambah catatan, dan mencetak invoice/label.
 - Setiap perubahan status tercatat (siapa, kapan).
 - Order pending payment dibatalkan otomatis 30 menit setelah invoice dibuat (lihat bagian 11), stok dikembalikan.
-- **[TBD]** Order otomatis completed berapa hari setelah barang diterima? Ini menentukan kapan lifetime purchase dan komisi affiliate dihitung.
+- Order menjadi **completed** saat customer mengonfirmasi paket diterima, atau otomatis 3 hari setelah paket berstatus diterima, mana yang lebih dulu **[USULAN: tafsir dari "saat diterima / 3 hari setelah diterima"]**.
+- Status "diterima" diambil dari tracking kurir, sehingga bergantung pada integrasi pengiriman (bagian 12). Admin dapat menandai diterima secara manual jika tracking gagal.
+- Completed memicu perhitungan lifetime purchase, kenaikan level, dan komisi affiliate.
 
 Pembatalan, retur, dan refund:
 
 - Permintaan customer masih melalui WhatsApp.
 - Admin mencatat refund/retur di backend agar stok, lifetime purchase, dan komisi affiliate ikut terkoreksi.
-- **[TBD]** Batas waktu pengajuan retur, syarat barang, dan siapa menanggung ongkir retur.
+- Syarat retur: ada bukti unboxing dan paket sudah diterima customer.
+- Ongkir retur ditanggung customer, kecuali kesalahan berasal dari toko.
+- Batas waktu pengajuan retur: 3 hari sejak paket diterima. Jika order sudah completed saat retur masuk (mis. customer konfirmasi lebih awal), lifetime purchase dan komisi dikoreksi sesuai aturan refund.
+- Jika kesalahan berasal dari toko (barang salah kirim atau cacat), ongkir retur ditanggung penjual.
 
 ---
 
@@ -274,7 +302,9 @@ Pembatalan, retur, dan refund:
 - Metode: QRIS, Virtual Account, e-wallet.
 - Batas waktu pembayaran: 30 menit setelah invoice dibuat, lalu order dibatalkan otomatis. Masa berlaku VA/QRIS di payment gateway harus diselaraskan dengan 30 menit ini.
 - Data kartu tidak pernah disimpan di server Inside Apparel.
-- Payment gateway **[USULAN]**: Midtrans atau Xendit. Keduanya mendukung QRIS, VA berbagai bank, dan e-wallet, serta memiliki integrasi WooCommerce. Pemilihan akhir berdasarkan biaya per transaksi dan kemudahan pendaftaran bisnis. Pemasangan plugin gateway memerlukan persetujuan owner sesuai CLAUDE.md.
+- Payment gateway: Midtrans (mendukung QRIS, Virtual Account, dan e-wallet).
+- Integrasi memakai plugin resmi Midtrans untuk WooCommerce (keputusan owner). Sesuai CLAUDE.md, sebelum dipasang dicatat: sumber resmi dan versi terbaru, dampak keamanan dan performa, serta rencana pemeliharaan.
+- Server key dan client key Midtrans disimpan di konfigurasi server (`wp-config.php` atau environment), tidak di kode dan tidak di repo.
 
 ---
 
@@ -284,7 +314,9 @@ Pembatalan, retur, dan refund:
 - Kurir: J&T dan JNE.
 - Resi dan label berbarcode dibuat otomatis dari backend.
 - Customer dapat melacak pengiriman dari halaman order.
-- **[TBD]** Cara integrasi: API langsung ke J&T dan JNE (umumnya perlu akun korporat/kemitraan) atau melalui agregator pengiriman (contoh: Biteship) yang menyediakan tarif, pembuatan resi, label, dan tracking dalam satu API. Perlu dicek ketersediaan dan syaratnya sebelum desain.
+- Integrasi pengiriman memakai API Biteship (tarif, pembuatan order/resi, label, dan tracking untuk J&T dan JNE). Diintegrasikan langsung ke API Biteship dari plugin `inside-apparel-core`, tanpa plugin pihak ketiga **[USULAN: tafsir dari "API langsung menggunakan Biteship"]**.
+- Pendaftaran akun Biteship dan verifikasinya (J&T dan JNE aktif, label berbarcode, mekanisme update status, alur pickup/drop-off) dilakukan nanti setelah operasional mulai berjalan.
+- Sampai integrasi Biteship aktif, admin menginput nomor resi dan label secara manual **[USULAN]**. Modul pengiriman dibuat dengan lapisan terpisah (pengiriman manual dan Biteship) agar Biteship dapat dipasang tanpa mengubah alur order.
 - Pengiriman order Shopee mengikuti logistik Shopee dan di luar cakupan bagian ini.
 
 ---
@@ -319,7 +351,8 @@ Notifikasi dikirim saat: order dibuat, pembayaran diterima, order dikirim (denga
 - **Backup**: backup database dan file terjadwal.
 - **Logging**: error integrasi dan perubahan stok tercatat.
 - **Skalabilitas**: penambahan produk, order, dan channel tidak memerlukan pembangunan ulang.
-- **[TBD]** Target kapasitas desain. "Sebanyak mungkin" perlu angka agar hosting dan struktur data bisa dirancang. Contoh: awal 500-1.000 SKU dan 50-100 order/hari, dengan desain yang tahan 10x lipat.
+- Target kapasitas awal: sekitar 100 order per hari (semua channel). Desain harus tetap nyaman hingga sekitar 10x lipatnya tanpa dibangun ulang.
+- Jumlah SKU awal: sekitar 100 SKU. Pemetaan SKU ke Shopee untuk jumlah ini dapat dilakukan lewat impor massal (CSV), tanpa membangun fitur pemetaan otomatis yang kompleks **[USULAN]**.
 
 ---
 
@@ -334,24 +367,31 @@ Notifikasi dikirim saat: order dibuat, pembayaran diterima, order dikirim (denga
 | Order Shopee ke lifetime purchase | Tidak dihitung |
 | Safety buffer stok | Tidak ada |
 | Sinkronisasi Shopee gagal | Kelola stok manual, tidak di-set 0 |
-| Komisi affiliate | 10-15%, dihitung dari order completed |
+| Komisi affiliate | Sama dengan diskon affiliate yang diterima pembeli (1-3% per produk), dari order completed, approved 1 hari setelah completed. Produk tanpa pengaturan memakai default 1% |
+| Diskon affiliate ke pembeli | 1-3% tergantung produk, dapat digabung dengan voucher member |
+| Voucher Gold | 7%, tanpa batas maksimum nominal **[USULAN]** |
 | Pembayaran komisi | Halaman saldo + tarik saldo, dibayar manual admin, minimum Rp100.000 |
 | Metode pembayaran | QRIS, Virtual Account, e-wallet |
 | Batas bayar | 30 menit |
-| Kurir | J&T dan JNE, resi/label otomatis dari backend |
-| Retur dan refund | Melalui WhatsApp, dicatat admin di backend |
+| Payment gateway | Midtrans, memakai plugin resmi Midtrans untuk WooCommerce |
+| Kurir | J&T dan JNE lewat API Biteship, resi/label otomatis dari backend. Akun Biteship didaftarkan setelah operasional berjalan, sementara itu resi diinput manual **[USULAN]** |
+| Retur dan refund | Melalui WhatsApp, dicatat admin di backend. Syarat: bukti unboxing, paket sudah diterima, diajukan maksimal 3 hari sejak diterima, ongkir retur ditanggung customer. Jika salah kirim atau cacat, ongkir retur ditanggung penjual |
+| Margin | Belum ada gambaran, ditunda. Sistem menyimpan harga pokok per SKU untuk analisis nanti **[USULAN]** |
+| Order completed | Saat customer konfirmasi diterima, atau otomatis 3 hari setelah diterima |
+| Kode affiliate + voucher member | Dapat digabung |
+| Jeda voucher member | 1 bulan setelah pemakaian; naik level langsung diberikan |
+| Target awal | Sekitar 100 order per hari, sekitar 100 SKU |
 | Notifikasi | Email otomatis, WhatsApp manual oleh admin (fase 1) |
-| Backend admin | Custom, acuan Jubelio POS |
+| Backend admin | Custom, acuan Jubelio (screenshot katalog produk, pesanan, posisi stok), lihat 1.2 |
+| POS offline | Di luar cakupan awal, dirancang bersama nanti jika dibutuhkan |
+| Produk bundle dan konsinyasi | Tidak diperlukan |
 
 ## Masih terbuka
 
-1. Besar diskon Gold (7%?) dan batas maksimum nominal voucher membership.
-2. Jeda antar voucher membership.
-3. Apakah kode affiliate memberi diskon ke pembeli dan bagaimana aturan penggabungannya.
-4. Komisi: tetap atau per affiliate, serta masa tunggu sebelum komisi approved.
-5. Kapan order otomatis completed.
-6. Kebijakan retur (batas waktu, syarat, ongkir).
-7. Payment gateway final.
-8. Cara integrasi kurir (API langsung atau agregator).
-9. Daftar fitur Jubelio yang jadi acuan dan apakah POS offline termasuk.
-10. Target jumlah SKU dan order per hari.
+Tidak ada pertanyaan bisnis yang menghalangi desain. Semua poin yang tersisa ada di bagian Ditunda.
+
+## Ditunda
+
+1. Pendaftaran dan verifikasi akun Biteship: setelah operasional berjalan. Status "diterima" otomatis bergantung pada ini, sementara admin menandai manual.
+2. Margin: menunggu gambaran harga pokok dan target margin. Kombinasi biaya promosi tertinggi saat ini 13% (lihat bagian 7).
+3. Pajak atas komisi affiliate: dicek bersama akuntan.

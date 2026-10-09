@@ -4,10 +4,11 @@ Panduan untuk AI coding agent (Codex/ChatGPT, Claude Code, dan lainnya) yang bek
 
 ## Wajib dibaca sebelum bekerja
 
-1. `CLAUDE.md`: aturan pengembangan. Berlaku untuk semua agent, bukan hanya Claude.
-2. `docs/MASTER_REQUIREMENT.md`: kebutuhan bisnis.
-3. `docs/DECISIONS.md`: keputusan yang sudah final. Jangan diubah tanpa persetujuan owner.
-4. `docs/INVENTORY_DESIGN.md` dan `docs/DATABASE.md`: bila pekerjaan menyentuh stok atau database.
+1. `docs/STATUS.md`: kondisi proyek terkini dan langkah berikutnya. Perbarui di akhir sesi kerja.
+2. `CLAUDE.md`: aturan pengembangan. Berlaku untuk semua agent, bukan hanya Claude.
+3. `docs/MASTER_REQUIREMENT.md`: kebutuhan bisnis.
+4. `docs/DECISIONS.md`: keputusan yang sudah final. Jangan diubah tanpa persetujuan owner.
+5. `docs/INVENTORY_DESIGN.md` dan `docs/DATABASE.md`: bila pekerjaan menyentuh stok atau database.
 
 ## Aturan ringkas
 
