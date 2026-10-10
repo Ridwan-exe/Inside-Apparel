@@ -288,3 +288,18 @@ Kriteria selesai (dipakai sebagai uji penerimaan):
 - Marketplace selain Shopee. Kolom `channel` pada tabel pemetaan sudah menyiapkannya.
 - Pre-order: dirancang saat fitur dibuat. Usulan awal: dikecualikan dari aturan stok tidak boleh negatif dan dari push ke Shopee, dengan kuota pre-order dikelola terpisah.
 - POS offline: dirancang bersama nanti, sumber `pos` sudah disiapkan pada log.
+
+---
+
+# 15. CATATAN IMPLEMENTASI TAHAP 1 DAN 2
+
+Ditambahkan 2026-10-10. Bagian ini mencatat keputusan teknis yang diambil saat menulis kode.
+
+1. **Dua jalur penulisan log.** `adjust()` dan `set_quantity()` mengubah stok lalu mencatat. `record()` hanya mencatat perubahan yang sudah dilakukan WooCommerce (order, edit langsung). Keduanya memicu hook `ia_stock_adjusted` untuk antrean Shopee (Tahap 3).
+2. **Log order berbasis status, bukan berbasis kejadian.** Hook `woocommerce_reduce_order_stock` dan `woocommerce_restore_order_stock` membandingkan `_reduced_stock` (milik WooCommerce) dengan `_ia_stock_logged` (milik kita) pada tiap item order. Selisihnya yang dicatat, sehingga aman dipanggil berulang dan gagal-tulis dicoba lagi pada pemicu berikutnya.
+3. **Edit langsung.** Sebelum produk disimpan, stok lama dibaca dari database; setelah disimpan, selisihnya dicatat sebagai `edit_langsung` (atau `stok_awal` bila sebelumnya stok tidak dikelola). Produk baru dengan stok dicatat `stok_awal` lewat hook produk baru. Perubahan oleh `adjust()` diabaikan lewat penanda `is_busy()`.
+4. **Angka Ditahan** diambil dari `ReserveStock` bawaan WooCommerce. Jika tidak tersedia, kolom menampilkan tanda strip dan Tersedia sama dengan Stok WC.
+5. **Dalam proses** dihitung dari item order berstatus processing yang stoknya sudah dikurangi. Status tambahan (mis. packed) ditambahkan lewat filter `ia_in_process_order_statuses`. Dibatasi 2.000 order.
+6. **Stok opname** memasukkan jumlah Fisik. Stok WC = Fisik - Dalam proses. Ditolak bila hasilnya negatif.
+7. **Yang belum tercatat di log:** refund WooCommerce dengan restock otomatis, dan penyesuaian item di layar edit order. Lihat D-021.
+8. **Pengaturan Stok** hanya menampilkan dan menerapkan pengaturan global WooCommerce (hold stock, notifikasi stok) dan mematikan backorder per produk, atas tombol eksplisit admin.

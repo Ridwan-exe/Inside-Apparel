@@ -16,8 +16,13 @@ final class IA_Inventory_Module {
 		require_once $dir . 'class-stock-log.php';
 		require_once $dir . 'class-inventory-service.php';
 		require_once $dir . 'class-csv.php';
+		require_once $dir . 'class-stock-metrics.php';
+		require_once $dir . 'class-woocommerce-hooks.php';
 
 		IA_Inventory_Installer::maybe_upgrade();
+
+		// Hook WooCommerce harus aktif di semua konteks (checkout, REST, cron), bukan hanya admin.
+		IA_Inventory_Woo_Hooks::init();
 
 		if ( ! is_admin() ) {
 			return;
@@ -26,6 +31,7 @@ final class IA_Inventory_Module {
 		require_once $dir . 'admin/class-stock-position-page.php';
 		require_once $dir . 'admin/class-stock-log-page.php';
 		require_once $dir . 'admin/class-stock-import-page.php';
+		require_once $dir . 'admin/class-stock-settings-page.php';
 
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 
@@ -34,6 +40,8 @@ final class IA_Inventory_Module {
 		add_action( 'admin_post_ia_stock_log_export', array( 'IA_Stock_Log_Page', 'handle_export' ) );
 		add_action( 'admin_post_ia_stock_import_preview', array( 'IA_Stock_Import_Page', 'handle_preview' ) );
 		add_action( 'admin_post_ia_stock_import_apply', array( 'IA_Stock_Import_Page', 'handle_apply' ) );
+		add_action( 'admin_post_ia_stock_settings_apply', array( 'IA_Stock_Settings_Page', 'handle_apply' ) );
+		add_action( 'admin_post_ia_stock_backorders_off', array( 'IA_Stock_Settings_Page', 'handle_backorders_off' ) );
 	}
 
 	public static function register_menu(): void {
@@ -49,6 +57,7 @@ final class IA_Inventory_Module {
 		add_submenu_page( 'ia-stock', 'Posisi Stok', 'Posisi Stok', 'ia_view_stock', 'ia-stock', array( 'IA_Stock_Position_Page', 'render' ) );
 		add_submenu_page( 'ia-stock', 'Log Stok', 'Log Stok', 'ia_view_stock', 'ia-stock-log', array( 'IA_Stock_Log_Page', 'render' ) );
 		add_submenu_page( 'ia-stock', 'Impor Stok', 'Impor Stok', 'ia_manage_stock', 'ia-stock-import', array( 'IA_Stock_Import_Page', 'render' ) );
+		add_submenu_page( 'ia-stock', 'Pengaturan Stok', 'Pengaturan Stok', 'ia_manage_stock', 'ia-stock-settings', array( 'IA_Stock_Settings_Page', 'render' ) );
 	}
 
 	/** Pesan satu kali tampil (disimpan per pengguna selama 60 detik). */

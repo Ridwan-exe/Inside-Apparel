@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Inside Apparel Core
  * Description: Business logic untuk Inside Apparel (inventory, membership, voucher, affiliate, marketplace).
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires PHP: 8.0
  * Requires Plugins: woocommerce
  * Text Domain: inside-apparel-core
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'IA_CORE_VERSION', '0.2.0' );
+define( 'IA_CORE_VERSION', '0.3.0' );
 define( 'IA_CORE_FILE', __FILE__ );
 define( 'IA_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'IA_CORE_URL', plugin_dir_url( __FILE__ ) );

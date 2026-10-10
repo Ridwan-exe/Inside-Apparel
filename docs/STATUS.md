@@ -31,24 +31,26 @@ Terakhir diperbarui: 2026-10-09
 
 - Repo GitHub `Ridwan-exe/Inside-Apparel` terhubung, branch `main`.
 - `.gitignore` model whitelist: hanya `docs`, `CLAUDE.md`, `AGENTS.md`, `README.md`, plugin `inside-apparel-core`, dan tema `inside-apparel` yang masuk Git.
-- Kerangka plugin `inside-apparel-core`: file utama dan loader yang memeriksa WooCommerce aktif. Folder modul (inventory, membership, voucher, affiliate, notification, shopee) masih kosong.
+- Kerangka plugin `inside-apparel-core`: file utama dan loader yang memeriksa WooCommerce aktif. Modul inventory sudah berisi kode (Tahap 1 dan 2). Folder modul membership, voucher, affiliate, notification, shopee masih kosong.
 - Kerangka tema `inside-apparel`: `style.css`, `functions.php`, `index.php`.
 - WordPress lokal di LocalWP. Plugin Inside Apparel Core sudah aktif.
 - Dokumen: MASTER_REQUIREMENT v0.8, INVENTORY_DESIGN v0.1, DATABASE v0.1, DECISIONS, AGENTS.
-- Inventory Tahap 1 (plugin v0.2.0), kode ditulis 2026-10-09: installer dan tabel, capability, deklarasi HPOS, `IA_Inventory_Service::adjust()` dan `set_quantity()`, log stok, halaman Posisi Stok (cari, filter, Sesuaikan, Export CSV), Log Stok (filter, Export CSV), Impor Stok Awal (CSV dengan pratinjau). 42 uji logika lulus dengan WordPress tiruan.
+- Inventory Tahap 1 (plugin v0.2.0), kode ditulis 2026-10-09: installer dan tabel, capability, deklarasi HPOS, `IA_Inventory_Service::adjust()` dan `set_quantity()`, log stok, halaman Posisi Stok (cari, filter, Sesuaikan, Export CSV), Log Stok (filter, Export CSV), Impor Stok Awal (CSV dengan pratinjau).
+- Inventory Tahap 2 (plugin v0.3.0), kode ditulis 2026-10-10: `IA_Inventory_Service::record()`; hook WooCommerce (`IA_Inventory_Woo_Hooks`) yang mencatat order dibayar/dibatalkan, edit langsung di layar produk, dan produk baru dengan stok; angka Ditahan, Tersedia, Dalam proses, Fisik (`IA_Stock_Metrics`) di Posisi Stok dan Export; stok opname berbasis Fisik; halaman Pengaturan Stok (hold stock 30 menit, notifikasi stok, matikan backorder). 77 uji logika (Tahap 1 + 2) lulus dengan WordPress tiruan.
 
 # 4. BELUM ADA
 
-- Tahap 1 BELUM diuji di WordPress/WooCommerce sungguhan (hanya diuji dengan tiruan). Uji di LocalWP dulu sebelum lanjut Tahap 2.
-- Tahap 2 (hook WooCommerce, angka Ditahan/Dalam proses/Fisik, pengaturan WooCommerce) belum dibuat. Kolom stok di halaman baru menampilkan Stok WooCommerce saja.
+- Tahap 1 dan 2 BELUM diuji di WordPress/WooCommerce sungguhan (hanya diuji dengan tiruan). Uji di LocalWP sebelum lanjut Tahap 3.
+- Asumsi tentang internal WooCommerce yang harus dibuktikan di LocalWP: (a) hook `woocommerce_reduce_order_stock` dan `woocommerce_restore_order_stock` terpicu dan item order memakai meta `_reduced_stock`; (b) `woocommerce_before/after_product_object_save` terpicu untuk produk dan variasi; (c) `ReserveStock::get_reserved_stock()` ada untuk angka Ditahan; (d) status stok produk berubah ke Habis saat stok 0.
+- Belum tercatat di log: perubahan stok dari fitur refund WooCommerce ("Restock refunded items") dan penyesuaian item di layar edit order. Retur dicatat lewat Sesuaikan > "Retur dikembalikan ke stok".
 - Dokumen design untuk order, membership, voucher, affiliate, notifikasi, Shopee belum ada.
 
 ---
 
 # 5. LANGKAH BERIKUTNYA (URUT)
 
-1. Owner menguji Tahap 1 di LocalWP (checklist uji ada di pesan serah terima sesi 2026-10-09) dan melaporkan hasilnya. Butir [USULAN] D-017 sampai D-020 dianggap disetujui kecuali owner menyatakan lain.
-2. Inventory Tahap 2: hook WooCommerce (order, batal, edit langsung), angka Ditahan/Dalam proses/Fisik, pengaturan WooCommerce (hold stock 30 menit, backorder mati). Deklarasi HPOS sudah ada sejak Tahap 1.
+1. Owner menguji Tahap 1 dan 2 di LocalWP (checklist uji ada di pesan serah terima sesi 2026-10-09 dan 2026-10-10) dan melaporkan hasilnya. Butir [USULAN] D-017 sampai D-022 dianggap disetujui kecuali owner menyatakan lain.
+2. Inventory Tahap 3 (butuh akses Shopee Open Platform): pemetaan SKU, token, push stok dengan antrean dan retry. Sebelum itu, tulis dokumen desain order management dan retur (Tahap 4 bergantung padanya).
 3. Tulis dokumen desain berikutnya: order management dan retur, lalu membership dan voucher, lalu affiliate.
 4. Owner mendaftar sebagai developer Shopee Open Platform (persetujuan bisa lama, jalur kritis Fase 2).
 

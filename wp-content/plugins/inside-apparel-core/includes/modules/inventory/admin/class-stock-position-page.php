@@ -1,7 +1,7 @@
 <?php
 /**
  * Halaman Posisi Stok: daftar stok per SKU, form Sesuaikan, dan Export CSV.
- * Tahap 1 menampilkan Stok WooCommerce. Angka Ditahan/Dalam proses/Fisik menyusul di Tahap 2.
+ * Angka stok dijelaskan di IA_Stock_Metrics dan docs/INVENTORY_DESIGN.md bagian 3.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -69,10 +69,6 @@ final class IA_Stock_Position_Page {
 		return wp_strip_all_tags( $title );
 	}
 
-	private static function stock_cell( $product ): string {
-		return true === $product->managing_stock() ? (string) (int) $product->get_stock_quantity() : '';
-	}
-
 	private static function cost_value( $product ): string {
 		$cost = $product->get_meta( '_ia_cost_price', true );
 		if ( '' === $cost && $product->is_type( 'variation' ) ) {
@@ -91,6 +87,7 @@ final class IA_Stock_Position_Page {
 		$paged = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$res      = self::query_products( $q, $status, $paged, self::PER_PAGE );
+		$map      = IA_Stock_Metrics::in_process_map();
 		$can_edit = current_user_can( 'ia_manage_stock' );
 		$labels   = self::stock_statuses();
 
@@ -122,12 +119,18 @@ final class IA_Stock_Position_Page {
 		}
 		echo '</select> <button class="button">Terapkan</button></form>';
 
-		echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
-		echo '<th>Produk</th><th style="width:140px;">SKU</th><th style="width:120px;">Harga pokok</th><th style="width:90px;">Stok</th><th style="width:110px;">Status</th><th style="width:150px;">Aksi</th>';
+		echo '<table class="wp-list-table widefat striped"><thead><tr>';
+		echo '<th>Produk</th><th>SKU</th><th>Harga pokok</th>';
+		echo '<th title="Stok setelah dikurangi order yang sudah dibayar">Stok WC</th>';
+		echo '<th title="Ditahan untuk order belum dibayar (maks. 30 menit)">Ditahan</th>';
+		echo '<th title="Stok WC dikurangi Ditahan. Angka inilah yang boleh dijual">Tersedia</th>';
+		echo '<th title="Order sudah dibayar, belum dikirim">Dalam proses</th>';
+		echo '<th title="Stok WC ditambah Dalam proses. Barang yang masih di rak">Fisik</th>';
+		echo '<th>Status</th><th>Aksi</th>';
 		echo '</tr></thead><tbody>';
 
 		if ( empty( $res->products ) ) {
-			echo '<tr><td colspan="6">Tidak ada produk yang cocok.</td></tr>';
+			echo '<tr><td colspan="10">Tidak ada produk yang cocok.</td></tr>';
 		}
 
 		foreach ( $res->products as $product ) {
@@ -136,12 +139,21 @@ final class IA_Stock_Position_Page {
 			$managed = true === $product->managing_stock();
 			$cost    = self::cost_value( $product );
 			$st      = $product->get_stock_status();
+			$n       = $managed ? IA_Stock_Metrics::for_product( $product, $map ) : null;
 
 			echo '<tr>';
 			echo '<td><strong>' . esc_html( self::product_title( $product ) ) . '</strong></td>';
 			echo '<td>' . ( '' !== $sku ? esc_html( $sku ) : '<em>kosong</em>' ) . '</td>';
 			echo '<td>' . ( '' !== $cost ? wp_kses_post( wc_price( (float) $cost ) ) : '&mdash;' ) . '</td>';
-			echo '<td>' . ( $managed ? esc_html( self::stock_cell( $product ) ) : '<em>tidak dikelola</em>' ) . '</td>';
+			if ( $managed ) {
+				echo '<td>' . esc_html( (string) $n['wc'] ) . '</td>';
+				echo '<td>' . ( null === $n['held'] ? '&mdash;' : esc_html( (string) $n['held'] ) ) . '</td>';
+				echo '<td><strong>' . esc_html( (string) $n['available'] ) . '</strong></td>';
+				echo '<td>' . esc_html( (string) $n['in_process'] ) . '</td>';
+				echo '<td>' . esc_html( (string) $n['physical'] ) . '</td>';
+			} else {
+				echo '<td colspan="5"><em>stok tidak dikelola</em></td>';
+			}
 			echo '<td>' . esc_html( $labels[ $st ] ?? $st ) . '</td>';
 			echo '<td>';
 			if ( $can_edit && $managed ) {
@@ -176,7 +188,7 @@ final class IA_Stock_Position_Page {
 			);
 			echo '</div></div>';
 		}
-		printf( '<p class="description">Total %d SKU. Waktu pada log memakai zona waktu situs (atur ke Asia/Jakarta di Pengaturan &rarr; Umum).</p>', (int) $res->total );
+		printf( '<p class="description">Total %d SKU. <strong>Tersedia</strong> = Stok WC &minus; Ditahan. <strong>Fisik</strong> = Stok WC + Dalam proses. Waktu pada log memakai zona waktu situs (atur ke Asia/Jakarta di Pengaturan &rarr; Umum).</p>', (int) $res->total );
 	}
 
 	private static function render_adjust(): void {
@@ -195,14 +207,16 @@ final class IA_Stock_Position_Page {
 			return;
 		}
 
-		$current = (int) $product->get_stock_quantity();
+		$n = IA_Stock_Metrics::for_product( $product, IA_Stock_Metrics::in_process_map() );
 
 		echo '<h1>Sesuaikan Stok</h1>';
 		echo '<p><a href="' . esc_url( $back ) . '">&larr; Kembali ke Posisi Stok</a></p>';
 		echo '<table class="form-table" role="presentation"><tbody>';
 		echo '<tr><th>Produk</th><td><strong>' . esc_html( self::product_title( $product ) ) . '</strong></td></tr>';
 		echo '<tr><th>SKU</th><td>' . esc_html( (string) $product->get_sku() ) . '</td></tr>';
-		echo '<tr><th>Stok saat ini</th><td><strong>' . esc_html( (string) $current ) . '</strong></td></tr>';
+		echo '<tr><th>Stok WC</th><td><strong>' . esc_html( (string) $n['wc'] ) . '</strong></td></tr>';
+		echo '<tr><th>Dalam proses</th><td>' . esc_html( (string) $n['in_process'] ) . '</td></tr>';
+		echo '<tr><th>Fisik di rak (saat ini)</th><td><strong>' . esc_html( (string) $n['physical'] ) . '</strong></td></tr>';
 		echo '</tbody></table>';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
@@ -214,7 +228,7 @@ final class IA_Stock_Position_Page {
 		echo '<tr><th scope="row">Jenis perubahan</th><td>';
 		echo '<label><input type="radio" name="mode" value="add" checked> Tambah</label><br>';
 		echo '<label><input type="radio" name="mode" value="subtract"> Kurangi</label><br>';
-		echo '<label><input type="radio" name="mode" value="set"> Set jumlah stok (hasil hitung stok opname)</label>';
+		echo '<label><input type="radio" name="mode" value="set"> Set jumlah <strong>fisik di rak</strong> (hasil hitung stok opname)</label>';
 		echo '</td></tr>';
 		echo '<tr><th scope="row"><label for="ia_qty">Jumlah</label></th><td><input type="number" id="ia_qty" name="qty" min="0" step="1" required class="small-text"></td></tr>';
 		echo '<tr><th scope="row"><label for="ia_reason">Alasan</label></th><td><select id="ia_reason" name="reason" required>';
@@ -274,7 +288,18 @@ final class IA_Stock_Position_Page {
 		);
 
 		if ( 'set' === $mode ) {
-			$result = IA_Inventory_Service::set_quantity( $product_id, $qty, $reason, 'admin', $args );
+			// Jumlah yang dimasukkan adalah FISIK di rak. Stok WC = fisik - barang dalam proses.
+			$in_process = (int) ( IA_Stock_Metrics::in_process_map()[ $product_id ] ?? 0 );
+			$target     = IA_Stock_Metrics::wc_target_from_physical( $qty, $in_process );
+			if ( null === $target ) {
+				IA_Inventory_Module::flash(
+					'error',
+					sprintf( 'Jumlah fisik (%d) lebih kecil dari barang dalam proses (%d). Periksa kembali hitungan Anda.', $qty, $in_process )
+				);
+				wp_safe_redirect( $back );
+				exit;
+			}
+			$result = IA_Inventory_Service::set_quantity( $product_id, $target, $reason, 'admin', $args );
 		} elseif ( 0 === $qty ) {
 			$result = new WP_Error( 'ia_zero_delta', 'Jumlah harus lebih dari 0.' );
 		} else {
@@ -289,7 +314,7 @@ final class IA_Stock_Position_Page {
 
 		IA_Inventory_Module::flash(
 			'success',
-			sprintf( 'Stok %s berubah dari %d menjadi %d.', $result['sku'], $result['qty_before'], $result['qty_after'] )
+			sprintf( 'Stok WC %s berubah dari %d menjadi %d.', $result['sku'], $result['qty_before'], $result['qty_after'] )
 		);
 		wp_safe_redirect( admin_url( 'admin.php?page=ia-stock' ) );
 		exit;
@@ -306,17 +331,24 @@ final class IA_Stock_Position_Page {
 		if ( ! array_key_exists( $status, self::stock_statuses() ) ) {
 			$status = '';
 		}
+		$map = IA_Stock_Metrics::in_process_map();
 
-		$rows = ( static function () use ( $q, $status ) {
+		$rows = ( static function () use ( $q, $status, $map ) {
 			$page = 1;
 			do {
 				$res = self::query_products( $q, $status, $page, 200 );
 				foreach ( $res->products as $product ) {
+					$managed = true === $product->managing_stock();
+					$n       = $managed ? IA_Stock_Metrics::for_product( $product, $map ) : null;
 					yield array(
 						IA_Core_Csv::safe( (string) $product->get_sku() ),
 						IA_Core_Csv::safe( self::product_title( $product ) ),
 						self::cost_value( $product ),
-						self::stock_cell( $product ),
+						$managed ? $n['wc'] : '',
+						$managed && null !== $n['held'] ? $n['held'] : '',
+						$managed ? $n['available'] : '',
+						$managed ? $n['in_process'] : '',
+						$managed ? $n['physical'] : '',
 						$product->get_stock_status(),
 					);
 				}
@@ -324,6 +356,10 @@ final class IA_Stock_Position_Page {
 			} while ( $page <= (int) $res->max_num_pages );
 		} )();
 
-		IA_Core_Csv::stream( 'posisi-stok-' . gmdate( 'Ymd-His' ) . '.csv', array( 'sku', 'produk', 'harga_pokok', 'stok', 'status' ), $rows );
+		IA_Core_Csv::stream(
+			'posisi-stok-' . gmdate( 'Ymd-His' ) . '.csv',
+			array( 'sku', 'produk', 'harga_pokok', 'stok_wc', 'ditahan', 'tersedia', 'dalam_proses', 'fisik', 'status' ),
+			$rows
+		);
 	}
 }

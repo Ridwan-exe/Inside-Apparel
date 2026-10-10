@@ -22,6 +22,7 @@ Aturan:
 | Harga pokok per SKU | Meta produk (rencana: `_ia_cost_price`) | Internal, tidak tampil ke customer **[USULAN]** |
 | Barcode per SKU | Meta produk (rencana: `_ia_barcode`) | **[USULAN]** |
 | Diskon affiliate per produk | Meta produk (rencana: `_ia_affiliate_discount_pct`) | 1-3%, default 1% bila kosong |
+| Penanda log stok per item order | Meta item order `_ia_stock_logged` (dipakai sejak plugin v0.3.0) | Jumlah yang sudah dicatat ke `ia_stock_log`; mencegah pencatatan ganda. Dibandingkan dengan `_reduced_stock` milik WooCommerce |
 
 Nama meta di atas masih rencana dan dikonfirmasi saat modul terkait dibuat.
 
@@ -89,4 +90,4 @@ Indeks: `UNIQUE (channel, sku)`, `(sync_status)`.
 
 | Versi DB | Tanggal | Perubahan |
 |----------|---------|-----------|
-| 1 | 2026-10-09 | Membuat `ia_stock_log` dan `ia_channel_sku_map` lewat `IA_Inventory_Installer` (plugin v0.2.0). Capability `ia_view_stock`, `ia_manage_stock`, `ia_manage_channels` ditambahkan ke Administrator dan Shop Manager. Tabel `ia_channel_sku_map` sudah dibuat tetapi belum dipakai (Tahap 3). |
+| 1 (tanpa perubahan skema di plugin v0.3.0) | 2026-10-09 | Membuat `ia_stock_log` dan `ia_channel_sku_map` lewat `IA_Inventory_Installer` (plugin v0.2.0). Capability `ia_view_stock`, `ia_manage_stock`, `ia_manage_channels` ditambahkan ke Administrator dan Shop Manager. Tabel `ia_channel_sku_map` sudah dibuat tetapi belum dipakai (Tahap 3). |

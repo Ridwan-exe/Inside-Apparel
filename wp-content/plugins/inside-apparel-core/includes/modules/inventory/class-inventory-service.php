@@ -169,6 +169,70 @@ final class IA_Inventory_Service {
 		return self::adjust( $product_id, $delta, $reason, $source, $args );
 	}
 
+	/**
+	 * Mencatat perubahan stok yang SUDAH dilakukan pihak lain (mis. WooCommerce saat order dibayar).
+	 * Tidak mengubah stok. Dipakai oleh hook WooCommerce; kode lain memakai adjust().
+	 *
+	 * @param int $qty_after Stok sesudah perubahan.
+	 * @return array|WP_Error
+	 */
+	public static function record( int $product_id, int $delta, int $qty_after, string $reason, string $source, array $args = array() ) {
+		$args = array_merge(
+			array(
+				'ref_type' => null,
+				'ref_id'   => null,
+				'note'     => '',
+				'user_id'  => null,
+			),
+			$args
+		);
+
+		if ( 0 === $delta ) {
+			return new WP_Error( 'ia_zero_delta', 'Selisih stok tidak boleh 0.' );
+		}
+		if ( ! array_key_exists( $reason, IA_Stock_Log::reasons() ) ) {
+			return new WP_Error( 'ia_bad_reason', 'Kode alasan tidak dikenal.' );
+		}
+		if ( ! array_key_exists( $source, IA_Stock_Log::sources() ) ) {
+			return new WP_Error( 'ia_bad_source', 'Sumber tidak dikenal.' );
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return new WP_Error( 'ia_not_found', 'Produk tidak ditemukan.' );
+		}
+
+		$log_id = IA_Stock_Log::insert(
+			array(
+				'product_id' => $product_id,
+				'sku'        => (string) $product->get_sku(),
+				'delta'      => $delta,
+				'qty_before' => $qty_after - $delta,
+				'qty_after'  => $qty_after,
+				'reason'     => $reason,
+				'source'     => $source,
+				'ref_type'   => $args['ref_type'],
+				'ref_id'     => $args['ref_id'],
+				'note'       => sanitize_textarea_field( (string) $args['note'] ),
+				'user_id'    => $args['user_id'],
+			)
+		);
+		if ( false === $log_id ) {
+			return new WP_Error( 'ia_log_failed', 'Gagal menulis log stok.' );
+		}
+
+		do_action( 'ia_stock_adjusted', $product_id, $delta, $qty_after, $reason, $source, $log_id );
+
+		return array(
+			'product_id' => $product_id,
+			'sku'        => (string) $product->get_sku(),
+			'delta'      => $delta,
+			'qty_before' => $qty_after - $delta,
+			'qty_after'  => $qty_after,
+			'log_id'     => $log_id,
+		);
+	}
+
 	private static function revert( $product, int $delta ): void {
 		wc_update_product_stock( $product, abs( $delta ), $delta > 0 ? 'decrease' : 'increase' );
 	}

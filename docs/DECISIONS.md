@@ -29,3 +29,5 @@ Aturan:
 | D-018 | 2026-10-08 | Order Shopee saat stok kurang: stok menjadi 0 dan dicatat sebagai oversold, order tetap diterima | Penjualan sudah terjadi di Shopee | Usulan |
 | D-019 | 2026-10-08 | Antrean sinkronisasi memakai Action Scheduler bawaan WooCommerce | Tanpa plugin tambahan | Usulan |
 | D-020 | 2026-10-08 | Rekonsiliasi stok Shopee tiap 30 menit, polling order tiap 5 menit | Cukup untuk 100 SKU dan 100 order per hari | Usulan |
+| D-021 | 2026-10-10 | Retur dicatat manual lewat Sesuaikan > "Retur dikembalikan ke stok". Fitur "Restock refunded items" di refund WooCommerce tidak dipakai | Retur masuk lewat WhatsApp dan perlu dicek kondisi barang; menjaga satu jalur pencatatan stok | Usulan |
+| D-022 | 2026-10-10 | Stok opname memakai angka Fisik (stok WC + dalam proses): admin memasukkan hitungan rak, sistem menghitung stok WC | Barang order dibayar yang belum dikirim masih ada di rak | Usulan |
