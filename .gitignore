@@ -1,4 +1,4 @@
-﻿# Abaikan semua, lalu izinkan hanya yang kita kelola
+# Abaikan semua, lalu izinkan hanya yang kita kelola
 /*
 !/.gitignore
 !/README.md
@@ -12,10 +12,10 @@
 !/wp-content/themes
 
 /wp-content/plugins/*
-!/wp-content/plugins/inside-apparel-core
+!/wp-content/plugins/insan-apparel-core
 
 /wp-content/themes/*
-!/wp-content/themes/inside-apparel
+!/wp-content/themes/insan-apparel
 
 # Rahasia & dependency
 .env

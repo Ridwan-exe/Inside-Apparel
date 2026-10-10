@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: Inside Apparel Core
- * Description: Business logic untuk Inside Apparel (inventory, membership, voucher, affiliate, marketplace).
+ * Plugin Name: Insan Apparel Core
+ * Description: Business logic untuk Insan Apparel (inventory, membership, voucher, affiliate, marketplace).
  * Version: 0.3.0
  * Requires PHP: 8.0
  * Requires Plugins: woocommerce
- * Text Domain: inside-apparel-core
+ * Text Domain: insan-apparel-core
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Mencatat perubahan stok yang dilakukan WooCommerce ke log Inside Apparel.
+ * Mencatat perubahan stok yang dilakukan WooCommerce ke log Insan Apparel.
  *
  * Tiga sumber perubahan:
  * 1. Order website: stok dikurangi saat dibayar, dikembalikan saat dibatalkan.

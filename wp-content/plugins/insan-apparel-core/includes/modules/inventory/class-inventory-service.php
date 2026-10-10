@@ -1,6 +1,6 @@
 <?php
 /**
- * Satu-satunya pintu perubahan stok dari kode Inside Apparel.
+ * Satu-satunya pintu perubahan stok dari kode Insan Apparel.
  * Kode lain TIDAK boleh menulis meta stok langsung. Lihat docs/INVENTORY_DESIGN.md bagian 2.
  *
  * Pemanggil bertanggung jawab memeriksa capability dan nonce sebelum memanggil service ini.

@@ -17,7 +17,7 @@ final class IA_Core_Plugin {
 
 	public static function missing_woocommerce_notice(): void {
 		echo '<div class="notice notice-error"><p>'
-			. esc_html__( 'Inside Apparel Core membutuhkan WooCommerce aktif.', 'inside-apparel-core' )
+			. esc_html__( 'Insan Apparel Core membutuhkan WooCommerce aktif.', 'insan-apparel-core' )
 			. '</p></div>';
 	}
 }

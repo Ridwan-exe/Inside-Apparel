@@ -46,8 +46,8 @@ final class IA_Inventory_Module {
 
 	public static function register_menu(): void {
 		add_menu_page(
-			'Inside Apparel',
-			'Inside Apparel',
+			'Insan Apparel',
+			'Insan Apparel',
 			'ia_view_stock',
 			'ia-stock',
 			array( 'IA_Stock_Position_Page', 'render' ),
